@@ -55,6 +55,17 @@ export interface ModelInfo {
 export type AnthropicModelId = keyof typeof anthropicModels
 export const anthropicDefaultModelId: AnthropicModelId = "claude-3-5-sonnet-20241022"
 export const anthropicModels = {
+	"claude-3-5-haiku-20241022": {
+		maxTokens: 8192,
+		contextWindow: 200_000,
+		supportsImages: false,
+		supportsComputerUse: false,
+		supportsPromptCache: true,
+		inputPrice: 1.0, // $3 per million input tokens
+		outputPrice: 5.0, // $15 per million output tokens
+		cacheWritesPrice: 1.25, // $3.75 per million tokens
+		cacheReadsPrice: 0.1, // $0.30 per million tokens
+	},
 	"claude-3-5-sonnet-20241022": {
 		maxTokens: 8192,
 		contextWindow: 200_000,

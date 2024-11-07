@@ -35,7 +35,7 @@ interface ChatViewProps {
 export const MAX_IMAGES_PER_MESSAGE = 20 // Anthropic limits to 20 images
 
 const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryView }: ChatViewProps) => {
-	const { version, clineMessages: messages, taskHistory, apiConfiguration } = useExtensionState()
+	const { version, clineMessages: messages, taskHistory, apiConfiguration, enableAutoApprove } = useExtensionState()
 
 	const task = useMemo(() => messages.at(0), [messages]) // leaving this less safe version here since if the first message is not a task, then the extension is in a bad state and needs to be debugged (see Cline.abort)
 	const modifiedMessages = useMemo(() => combineApiRequests(combineCommandSequences(messages.slice(1))), [messages])
@@ -54,6 +54,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 	const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({})
 	const scrollContainerRef = useRef<HTMLDivElement>(null)
 	const disableAutoScrollRef = useRef(false)
+	const autoApproveClineAskTimer = useRef<NodeJS.Timeout|number|null>(null)
 	const [showScrollToBottom, setShowScrollToBottom] = useState(false)
 	const [isAtBottom, setIsAtBottom] = useState(false)
 
@@ -365,18 +366,35 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 	useMount(() => {
 		textAreaRef.current?.focus()
 	})
-
+	
 	useEffect(() => {
-		const timer = setTimeout(() => {
-			if (lastMessage?.type === "ask") {
-				handlePrimaryButtonClick()
-			}
-		}, 5000)
-
-		return () => {
-			clearTimeout(timer)
+		if (!enableAutoApprove || !lastMessage || lastMessage?.type !== "ask" || !["browser_action_launch", "tool", "api_req_failed" ,"command"].includes(lastMessage?.ask!)) {
+			return
 		}
-	}, [lastMessage, handlePrimaryButtonClick])
+		setTimeout(() => handlePrimaryButtonClick(), 5);
+	}, [enableAutoApprove, lastMessage, handlePrimaryButtonClick]);
+	// useEffect(() => {
+	// 	console.log(lastMessage)
+	// 	if (!lastMessage || lastMessage?.type !== "ask" || !["completion_result","browser_action_launch", "tool", "api_req_failed" ,"command"].includes(lastMessage?.ask!)) {
+	// 		if (autoApproveClineAskTimer.current) {
+	// 			clearTimeout(autoApproveClineAskTimer.current)
+	// 			autoApproveClineAskTimer.current = null;
+	// 		}
+
+	// 		return
+	// 	}
+
+	// 	autoApproveClineAskTimer.current = setTimeout(handlePrimaryButtonClick, 5000)
+
+	// 	return () => {
+	// 		if (!autoApproveClineAskTimer.current) {
+	// 			return
+	// 		}
+
+	// 		clearTimeout(autoApproveClineAskTimer.current)
+	// 		autoApproveClineAskTimer.current = null;
+	// 	}
+	// }, [lastMessage, handlePrimaryButtonClick])
 
 	useEffect(() => {
 		const timer = setTimeout(() => {
@@ -572,6 +590,11 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 		},
 		[scrollToBottomSmooth, scrollToBottomAuto]
 	)
+
+	const clearAutoApproveClineAskTimeout = useCallback(() => {
+		clearTimeout(autoApproveClineAskTimer.current!)
+		autoApproveClineAskTimer.current = null;
+	}, []);
 
 	useEffect(() => {
 		if (!disableAutoScrollRef.current) {
@@ -772,6 +795,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 				selectedImages={selectedImages}
 				setSelectedImages={setSelectedImages}
 				onSend={() => handleSendMessage(inputValue, selectedImages)}
+				onFocus={clearAutoApproveClineAskTimeout}
 				onSelectImages={selectImages}
 				shouldDisableImages={shouldDisableImages}
 				onHeightChange={() => {

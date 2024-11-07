@@ -18,8 +18,8 @@
 		"strict": true,
 		"target": "es2022",
 		"useDefineForClassFields": true,
-		"useUnknownInCatchVariables": false
+		"useUnknownInCatchVariables": false,
 	},
 	"include": ["src/**/*", "scripts/**/*"],
-	"exclude": ["node_modules", ".vscode-test", "webview-ui"]
+	"exclude": [".vscode-test", "webview-ui"]
 }
