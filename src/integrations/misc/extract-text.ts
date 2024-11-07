@@ -20,6 +20,11 @@ export async function extractTextFromFile(filePath: string): Promise<string> {
 		case ".ipynb":
 			return extractTextFromIPYNB(filePath)
 		default:
+			// max 1MB files
+			if ((await fs.stat(filePath)).size > 1 * 1024 * 1024) {
+				throw new Error(`Cannot read file ${filePath}, file is too large.`)
+			}
+			
 			const isBinary = await isBinaryFile(filePath).catch(() => false)
 			if (!isBinary) {
 				return await fs.readFile(filePath, "utf8")

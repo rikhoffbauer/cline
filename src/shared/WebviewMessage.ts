@@ -4,6 +4,7 @@ export interface WebviewMessage {
 	type:
 		| "apiConfiguration"
 		| "customInstructions"
+		| "enableAutoApprove"
 		| "alwaysAllowReadOnly"
 		| "webviewDidLaunch"
 		| "newTask"

@@ -12,6 +12,7 @@ export const toolUseNames = [
 	"execute_command",
 	"read_file",
 	"write_to_file",
+	"write_file",
 	"search_files",
 	"list_files",
 	"list_code_definition_names",
@@ -62,6 +63,10 @@ export interface ReadFileToolUse extends ToolUse {
 export interface WriteToFileToolUse extends ToolUse {
 	name: "write_to_file"
 	params: Partial<Pick<Record<ToolParamName, string>, "path" | "content">>
+}
+
+export interface WriteFileToolUse extends Omit<WriteToFileToolUse,"name"> {
+	name: "write_file"
 }
 
 export interface SearchFilesToolUse extends ToolUse {

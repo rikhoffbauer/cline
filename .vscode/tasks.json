@@ -6,7 +6,7 @@
 		{
             "label": "watch",
             "dependsOn": [
-                "npm: build:webview",
+                "npm: watch:webview",
                 "npm: watch:tsc",
                 "npm: watch:esbuild"
             ],
@@ -25,6 +25,18 @@
             "problemMatcher": [],
             "isBackground": true,
             "label": "npm: build:webview",
+            "presentation": {
+                "group": "watch",
+                "reveal": "never"
+            }
+        },
+        {
+            "type": "npm",
+            "script": "watch:webview",
+            "group": "build",
+            "problemMatcher": [],
+            "isBackground": true,
+            "label": "npm: watch:webview",
             "presentation": {
                 "group": "watch",
                 "reveal": "never"

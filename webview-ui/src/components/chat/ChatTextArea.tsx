@@ -21,6 +21,7 @@ interface ChatTextAreaProps {
 	selectedImages: string[]
 	setSelectedImages: React.Dispatch<React.SetStateAction<string[]>>
 	onSend: () => void
+	onFocus: () => void
 	onSelectImages: () => void
 	shouldDisableImages: boolean
 	onHeightChange?: (height: number) => void
@@ -36,6 +37,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			selectedImages,
 			setSelectedImages,
 			onSend,
+			onFocus,
 			onSelectImages,
 			shouldDisableImages,
 			onHeightChange,
@@ -301,6 +303,12 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			}
 			setIsTextAreaFocused(false)
 		}, [isMouseDownOnMenu])
+
+		useEffect(() => {
+			if (isTextAreaFocused) {
+				onFocus();
+			}
+		}, [isTextAreaFocused, onFocus])
 
 		const handlePaste = useCallback(
 			async (e: React.ClipboardEvent) => {
