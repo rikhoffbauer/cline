@@ -85,11 +85,8 @@ export class AnthropicHandler implements ApiHandler {
 									},
 								}
 							case "claude-3-5-sonnet-20241022":
-								return {
-									headers: {
-										"anthropic-beta": "prompt-caching-2024-07-31",
-									},
-								}
+							case "claude-3-5-haiku-20241022":
+							case "claude-3-opus-20240229":
 							case "claude-3-haiku-20240307":
 								return {
 									headers: { "anthropic-beta": "prompt-caching-2024-07-31" },
