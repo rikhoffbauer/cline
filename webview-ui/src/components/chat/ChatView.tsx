@@ -54,7 +54,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 	const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({})
 	const scrollContainerRef = useRef<HTMLDivElement>(null)
 	const disableAutoScrollRef = useRef(false)
-	const autoApproveClineAskTimer = useRef<NodeJS.Timeout|number|null>(null)
+	const autoApproveClineAskTimer = useRef<NodeJS.Timeout | number | null>(null)
 	const [showScrollToBottom, setShowScrollToBottom] = useState(false)
 	const [isAtBottom, setIsAtBottom] = useState(false)
 
@@ -248,7 +248,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 				disableAutoScrollRef.current = false
 			}
 		},
-		[messages.length, clineAsk]
+		[messages.length, clineAsk],
 	)
 
 	const startNewTask = useCallback(() => {
@@ -327,13 +327,16 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 								textAreaRef.current?.focus()
 							}
 							break
+						case "codeModified":
+							cancelCountdown()
+							break
 					}
 					break
 				case "selectedImages":
 					const newImages = message.images ?? []
 					if (newImages.length > 0) {
 						setSelectedImages((prevImages) =>
-							[...prevImages, ...newImages].slice(0, MAX_IMAGES_PER_MESSAGE)
+							[...prevImages, ...newImages].slice(0, MAX_IMAGES_PER_MESSAGE),
 						)
 					}
 					break
@@ -358,7 +361,8 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 			handleSendMessage,
 			handlePrimaryButtonClick,
 			handleSecondaryButtonClick,
-		]
+			cancelCountdown,
+		],
 	)
 
 	useEvent("message", handleMessage)
@@ -366,35 +370,58 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 	useMount(() => {
 		textAreaRef.current?.focus()
 	})
-	
+
+	const [countdownValue, setCountdownValue] = useState<number | null>(null)
+	const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null)
+
 	useEffect(() => {
-		if (!enableAutoApprove || !lastMessage || lastMessage?.type !== "ask" || !["browser_action_launch", "tool", "api_req_failed" ,"command"].includes(lastMessage?.ask!)) {
+		if (
+			!enableAutoApprove ||
+			!lastMessage ||
+			lastMessage?.type !== "ask" ||
+			!["browser_action_launch", "tool", "api_req_failed", "command"].includes(lastMessage?.ask!)
+		) {
+			if (countdownIntervalRef.current) {
+				clearInterval(countdownIntervalRef.current)
+				countdownIntervalRef.current = null
+			}
+			setCountdownValue(null)
 			return
 		}
-		setTimeout(() => handlePrimaryButtonClick(), 5);
-	}, [enableAutoApprove, lastMessage, handlePrimaryButtonClick]);
-	// useEffect(() => {
-	// 	console.log(lastMessage)
-	// 	if (!lastMessage || lastMessage?.type !== "ask" || !["completion_result","browser_action_launch", "tool", "api_req_failed" ,"command"].includes(lastMessage?.ask!)) {
-	// 		if (autoApproveClineAskTimer.current) {
-	// 			clearTimeout(autoApproveClineAskTimer.current)
-	// 			autoApproveClineAskTimer.current = null;
-	// 		}
 
-	// 		return
-	// 	}
+		// Start 10 second countdown
+		setCountdownValue(10)
+		countdownIntervalRef.current = setInterval(() => {
+			setCountdownValue((prev) => {
+				if (prev === null || prev <= 0) {
+					if (countdownIntervalRef.current) {
+						clearInterval(countdownIntervalRef.current)
+						countdownIntervalRef.current = null
+					}
+					return null
+				}
+				if (prev === 1) {
+					handlePrimaryButtonClick()
+				}
+				return prev - 1
+			})
+		}, 1000)
 
-	// 	autoApproveClineAskTimer.current = setTimeout(handlePrimaryButtonClick, 5000)
+		return () => {
+			if (countdownIntervalRef.current) {
+				clearInterval(countdownIntervalRef.current)
+				countdownIntervalRef.current = null
+			}
+		}
+	}, [enableAutoApprove, lastMessage, handlePrimaryButtonClick])
 
-	// 	return () => {
-	// 		if (!autoApproveClineAskTimer.current) {
-	// 			return
-	// 		}
-
-	// 		clearTimeout(autoApproveClineAskTimer.current)
-	// 		autoApproveClineAskTimer.current = null;
-	// 	}
-	// }, [lastMessage, handlePrimaryButtonClick])
+	const cancelCountdown = useCallback(() => {
+		if (countdownIntervalRef.current) {
+			clearInterval(countdownIntervalRef.current)
+			countdownIntervalRef.current = null
+		}
+		setCountdownValue(null)
+	}, [])
 
 	useEffect(() => {
 		const timer = setTimeout(() => {
@@ -511,9 +538,9 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 					})
 				},
 				10,
-				{ immediate: true }
+				{ immediate: true },
 			),
-		[]
+		[],
 	)
 
 	const scrollToBottomAuto = useCallback(() => {
@@ -573,7 +600,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 				}
 			}
 		},
-		[groupedMessages, expandedRows, scrollToBottomAuto, isAtBottom]
+		[groupedMessages, expandedRows, scrollToBottomAuto, isAtBottom],
 	)
 
 	const handleRowHeightChange = useCallback(
@@ -588,13 +615,13 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 				}
 			}
 		},
-		[scrollToBottomSmooth, scrollToBottomAuto]
+		[scrollToBottomSmooth, scrollToBottomAuto],
 	)
 
 	const clearAutoApproveClineAskTimeout = useCallback(() => {
 		clearTimeout(autoApproveClineAskTimer.current!)
-		autoApproveClineAskTimer.current = null;
-	}, []);
+		autoApproveClineAskTimer.current = null
+	}, [])
 
 	useEffect(() => {
 		if (!disableAutoScrollRef.current) {
@@ -651,7 +678,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 				/>
 			)
 		},
-		[expandedRows, modifiedMessages, groupedMessages.length, toggleRowExpansion, handleRowHeightChange]
+		[expandedRows, modifiedMessages, groupedMessages.length, toggleRowExpansion, handleRowHeightChange],
 	)
 
 	return (
@@ -665,7 +692,8 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 				display: isHidden ? "none" : "flex",
 				flexDirection: "column",
 				overflow: "hidden",
-			}}>
+			}}
+		>
 			{task ? (
 				<TaskHeader
 					task={task}
@@ -684,7 +712,8 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 						overflowY: "auto",
 						display: "flex",
 						flexDirection: "column",
-					}}>
+					}}
+				>
 					{showAnnouncement && <Announcement version={version} hideAnnouncement={hideAnnouncement} />}
 					<div style={{ padding: "0 20px", flexShrink: 0 }}>
 						<h2>What can I do for you?</h2>
@@ -692,7 +721,8 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 							Thanks to{" "}
 							<VSCodeLink
 								href="https://www-cdn.anthropic.com/fed9cc193a14b84131812372d8d5857f8f304c52/Model_Card_Claude_3_Addendum.pdf"
-								style={{ display: "inline" }}>
+								style={{ display: "inline" }}
+							>
 								Claude 3.5 Sonnet's agentic coding capabilities,
 							</VSCodeLink>{" "}
 							I can handle complex software development tasks step-by-step. With tools that let me create
@@ -737,12 +767,14 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 							style={{
 								display: "flex",
 								padding: "10px 15px 0px 15px",
-							}}>
+							}}
+						>
 							<ScrollToBottomButton
 								onClick={() => {
 									scrollToBottomSmooth()
 									disableAutoScrollRef.current = false
-								}}>
+								}}
+							>
 								<span className="codicon codicon-chevron-down" style={{ fontSize: "18px" }}></span>
 							</ScrollToBottomButton>
 						</div>
@@ -757,7 +789,8 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 										: 0,
 								display: "flex",
 								padding: "10px 15px 0px 15px",
-							}}>
+							}}
+						>
 							{primaryButtonText && !isStreaming && (
 								<VSCodeButton
 									appearance="primary"
@@ -766,8 +799,9 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 										flex: secondaryButtonText ? 1 : 2,
 										marginRight: secondaryButtonText ? "6px" : "0",
 									}}
-									onClick={handlePrimaryButtonClick}>
-									{primaryButtonText}
+									onClick={handlePrimaryButtonClick}
+								>
+									{primaryButtonText} {countdownValue !== null ? `(${countdownValue}s)` : ""}
 								</VSCodeButton>
 							)}
 							{(secondaryButtonText || isStreaming) && (
@@ -778,7 +812,8 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 										flex: isStreaming ? 2 : 1,
 										marginLeft: isStreaming ? 0 : "6px",
 									}}
-									onClick={handleSecondaryButtonClick}>
+									onClick={handleSecondaryButtonClick}
+								>
 									{isStreaming ? "Cancel" : secondaryButtonText}
 								</VSCodeButton>
 							)}
@@ -789,13 +824,18 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 			<ChatTextArea
 				ref={textAreaRef}
 				inputValue={inputValue}
-				setInputValue={setInputValue}
+				setInputValue={(value) => {
+					setInputValue(value)
+					if (value) {
+						cancelCountdown()
+					}
+				}}
 				textAreaDisabled={textAreaDisabled}
 				placeholderText={placeholderText}
 				selectedImages={selectedImages}
 				setSelectedImages={setSelectedImages}
 				onSend={() => handleSendMessage(inputValue, selectedImages)}
-				onFocus={clearAutoApproveClineAskTimeout}
+				onFocus={cancelCountdown}
 				onSelectImages={selectImages}
 				shouldDisableImages={shouldDisableImages}
 				onHeightChange={() => {
