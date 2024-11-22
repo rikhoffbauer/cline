@@ -316,6 +316,14 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 	const shouldDisableImages =
 		!selectedModelInfo.supportsImages || textAreaDisabled || selectedImages.length >= MAX_IMAGES_PER_MESSAGE
 
+	const cancelCountdown = useCallback(() => {
+		if (countdownIntervalRef.current) {
+			clearInterval(countdownIntervalRef.current)
+			countdownIntervalRef.current = null
+		}
+		setCountdownValue(null)
+	}, [])
+
 	const handleMessage = useCallback(
 		(e: MessageEvent) => {
 			const message: ExtensionMessage = e.data
@@ -414,14 +422,6 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 			}
 		}
 	}, [enableAutoApprove, lastMessage, handlePrimaryButtonClick])
-
-	const cancelCountdown = useCallback(() => {
-		if (countdownIntervalRef.current) {
-			clearInterval(countdownIntervalRef.current)
-			countdownIntervalRef.current = null
-		}
-		setCountdownValue(null)
-	}, [])
 
 	useEffect(() => {
 		const timer = setTimeout(() => {
