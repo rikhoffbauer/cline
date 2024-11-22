@@ -42,7 +42,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			shouldDisableImages,
 			onHeightChange,
 		},
-		ref
+		ref,
 	) => {
 		const { filePaths } = useExtensionState()
 		const [isTextAreaFocused, setIsTextAreaFocused] = useState(false)
@@ -121,7 +121,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					const { newValue, mentionIndex } = insertMention(
 						textAreaRef.current.value,
 						cursorPosition,
-						insertValue
+						insertValue,
 					)
 
 					setInputValue(newValue)
@@ -139,7 +139,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					}, 0)
 				}
 			},
-			[setInputValue, cursorPosition]
+			[setInputValue, cursorPosition],
 		)
 
 		const handleKeyDown = useCallback(
@@ -165,14 +165,14 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							const selectableOptions = options.filter(
 								(option) =>
 									option.type !== ContextMenuOptionType.URL &&
-									option.type !== ContextMenuOptionType.NoResults
+									option.type !== ContextMenuOptionType.NoResults,
 							)
 
 							if (selectableOptions.length === 0) return -1 // No selectable options
 
 							// Find the index of the next selectable option
 							const currentSelectableIndex = selectableOptions.findIndex(
-								(option) => option === options[prevIndex]
+								(option) => option === options[prevIndex],
 							)
 
 							const newSelectableIndex =
@@ -254,7 +254,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				setInputValue,
 				justDeletedSpaceAfterMention,
 				queryItems,
-			]
+			],
 		)
 
 		useLayoutEffect(() => {
@@ -287,7 +287,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					setSelectedMenuIndex(-1)
 				}
 			},
-			[setInputValue]
+			[setInputValue],
 		)
 
 		useEffect(() => {
@@ -378,7 +378,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					}
 				}
 			},
-			[shouldDisableImages, setSelectedImages, cursorPosition, setInputValue, inputValue]
+			[shouldDisableImages, setSelectedImages, cursorPosition, setInputValue, inputValue],
 		)
 
 		const handleThumbnailsHeightChange = useCallback((height: number) => {
@@ -402,7 +402,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 
 			highlightLayerRef.current.innerHTML = text
 				.replace(/\n$/, "\n\n")
-				.replace(/[<>&]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c] || c))
+				.replace(/[<>&]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" })[c] || c)
 				.replace(mentionRegexGlobal, '<mark class="mention-context-textarea-highlight">$&</mark>')
 
 			highlightLayerRef.current.scrollTop = textAreaRef.current.scrollTop
@@ -425,7 +425,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					updateCursorPosition()
 				}
 			},
-			[updateCursorPosition]
+			[updateCursorPosition],
 		)
 
 		return (
@@ -602,7 +602,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				</div>
 			</div>
 		)
-	}
+	},
 )
 
 export default ChatTextArea
