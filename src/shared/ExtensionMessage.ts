@@ -16,7 +16,7 @@ export interface ExtensionMessage {
 		| "invoke"
 		| "partialMessage"
 		| "openRouterModels"
-	text?: string | "user_modified"
+	text?: "user_modified" | string
 	action?:
 		| "chatButtonClicked"
 		| "settingsButtonClicked"

@@ -60,7 +60,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 
 	const lastMessage = useMemo(() => messages.at(-1), [messages])
 	const secondLastMessage = useMemo(() => messages.at(-2), [messages])
-	useDeepCompareEffect(() => {
+		useDeepCompareEffect(() => {
 		if (lastMessage) {
 			switch (lastMessage.type) {
 				case "ask":
@@ -665,7 +665,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 					<BrowserSessionRow
 						messages={messageOrGroup}
 						isLast={index === groupedMessages.length - 1}
-						lastModifiedMessage={modifiedMessages.at(-1)}
+						lastModifiedMessage={modifiedMessages.at(-1)!}
 						onHeightChange={handleRowHeightChange}
 						isExpanded={(messageTs: number) => expandedRows[messageTs] ?? false}
 						onToggleExpand={(messageTs: number) => {
@@ -684,7 +684,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 					message={messageOrGroup}
 					isExpanded={expandedRows[messageOrGroup.ts] || false}
 					onToggleExpand={() => toggleRowExpansion(messageOrGroup.ts)}
-					lastModifiedMessage={modifiedMessages.at(-1)}
+					lastModifiedMessage={modifiedMessages.at(-1)!}
 					isLast={index === groupedMessages.length - 1}
 					onHeightChange={handleRowHeightChange}
 				/>
