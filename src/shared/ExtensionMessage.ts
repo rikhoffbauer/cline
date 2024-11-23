@@ -31,6 +31,7 @@ export interface ExtensionMessage {
 	filePaths?: string[]
 	partialMessage?: ClineMessage
 	openRouterModels?: Record<string, ModelInfo>
+	text?: "user_modified" | string
 }
 
 export interface ExtensionState {

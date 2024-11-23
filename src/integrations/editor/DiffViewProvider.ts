@@ -30,8 +30,19 @@ export class DiffViewProvider {
 		this.disposables.push(
 			vscode.workspace.onDidChangeTextDocument((e) => {
 				if (this.activeDiffEditor && e.document === this.activeDiffEditor.document) {
-					// Notify webview that code was modified
-					vscode.commands.executeCommand("cline.notifyCodeModified")
+					// Only notify of user modifications
+					const hasUserChanges = e.contentChanges.some((change) => {
+						// Check if change has a reason property and it's not an undo/redo
+						return (
+							!change.text.includes("Cline's Changes") &&
+							!change.text.includes("Original ↔ Cline's Changes")
+						)
+					})
+
+					if (hasUserChanges) {
+						// Notify webview that code was modified by user
+						vscode.commands.executeCommand("cline.notifyCodeModified")
+					}
 				}
 			}),
 		)

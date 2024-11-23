@@ -415,6 +415,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 			})
 		}, 1000)
 
+		// Only cleanup if component unmounts or lastMessage/enableAutoApprove changes
 		return () => {
 			if (countdownIntervalRef.current) {
 				clearInterval(countdownIntervalRef.current)
@@ -422,6 +423,17 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 			}
 		}
 	}, [enableAutoApprove, lastMessage, handlePrimaryButtonClick])
+
+	// Handle code modifications from extension
+	useEvent("message", (e: MessageEvent) => {
+		const message: ExtensionMessage = e.data
+		if (message.type === "action" && message.action === "codeModified") {
+			// Only cancel countdown if it's a user modification
+			if (message.text === "user_modified") {
+				cancelCountdown()
+			}
+		}
+	})
 
 	useEffect(() => {
 		const timer = setTimeout(() => {
@@ -692,8 +704,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 				display: isHidden ? "none" : "flex",
 				flexDirection: "column",
 				overflow: "hidden",
-			}}
-		>
+			}}>
 			{task ? (
 				<TaskHeader
 					task={task}
@@ -712,8 +723,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 						overflowY: "auto",
 						display: "flex",
 						flexDirection: "column",
-					}}
-				>
+					}}>
 					{showAnnouncement && <Announcement version={version} hideAnnouncement={hideAnnouncement} />}
 					<div style={{ padding: "0 20px", flexShrink: 0 }}>
 						<h2>What can I do for you?</h2>
@@ -721,8 +731,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 							Thanks to{" "}
 							<VSCodeLink
 								href="https://www-cdn.anthropic.com/fed9cc193a14b84131812372d8d5857f8f304c52/Model_Card_Claude_3_Addendum.pdf"
-								style={{ display: "inline" }}
-							>
+								style={{ display: "inline" }}>
 								Claude 3.5 Sonnet's agentic coding capabilities,
 							</VSCodeLink>{" "}
 							I can handle complex software development tasks step-by-step. With tools that let me create
@@ -767,14 +776,12 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 							style={{
 								display: "flex",
 								padding: "10px 15px 0px 15px",
-							}}
-						>
+							}}>
 							<ScrollToBottomButton
 								onClick={() => {
 									scrollToBottomSmooth()
 									disableAutoScrollRef.current = false
-								}}
-							>
+								}}>
 								<span className="codicon codicon-chevron-down" style={{ fontSize: "18px" }}></span>
 							</ScrollToBottomButton>
 						</div>
@@ -789,8 +796,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 										: 0,
 								display: "flex",
 								padding: "10px 15px 0px 15px",
-							}}
-						>
+							}}>
 							{primaryButtonText && !isStreaming && (
 								<VSCodeButton
 									appearance="primary"
@@ -799,8 +805,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 										flex: secondaryButtonText ? 1 : 2,
 										marginRight: secondaryButtonText ? "6px" : "0",
 									}}
-									onClick={handlePrimaryButtonClick}
-								>
+									onClick={handlePrimaryButtonClick}>
 									{primaryButtonText} {countdownValue !== null ? `(${countdownValue}s)` : ""}
 								</VSCodeButton>
 							)}
@@ -812,8 +817,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 										flex: isStreaming ? 2 : 1,
 										marginLeft: isStreaming ? 0 : "6px",
 									}}
-									onClick={handleSecondaryButtonClick}
-								>
+									onClick={handleSecondaryButtonClick}>
 									{isStreaming ? "Cancel" : secondaryButtonText}
 								</VSCodeButton>
 							)}
