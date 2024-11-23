@@ -16,7 +16,7 @@ export interface ExtensionMessage {
 		| "invoke"
 		| "partialMessage"
 		| "openRouterModels"
-	text?: string
+	text?: string | "user_modified"
 	action?:
 		| "chatButtonClicked"
 		| "settingsButtonClicked"
@@ -31,7 +31,6 @@ export interface ExtensionMessage {
 	filePaths?: string[]
 	partialMessage?: ClineMessage
 	openRouterModels?: Record<string, ModelInfo>
-	text?: "user_modified" | string
 }
 
 export interface ExtensionState {
