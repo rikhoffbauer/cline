@@ -331,6 +331,7 @@ function validateToolInput(toolName: string, tool_input: Record<string, string>)
 			return "path" in tool_input
 		case "search_files":
 			return "path" in tool_input && "regex" in tool_input
+		case "write_file":
 		case "write_to_file":
 			return "path" in tool_input && "content" in tool_input
 		case "ask_followup_question":

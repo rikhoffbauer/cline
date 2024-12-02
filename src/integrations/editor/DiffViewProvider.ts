@@ -23,8 +23,30 @@ export class DiffViewProvider {
 	private activeLineController?: DecorationController
 	private streamedLines: string[] = []
 	private preDiagnostics: [vscode.Uri, vscode.Diagnostic[]][] = []
+	private disposables: vscode.Disposable[] = []
 
-	constructor(private cwd: string) {}
+	constructor(private cwd: string) {
+		// Listen for document changes
+		this.disposables.push(
+			vscode.workspace.onDidChangeTextDocument((e) => {
+				if (this.activeDiffEditor && e.document === this.activeDiffEditor.document) {
+					// Only notify of user modifications
+					const hasUserChanges = e.contentChanges.some((change) => {
+						// Check if change has a reason property and it's not an undo/redo
+						return (
+							!change.text.includes("Cline's Changes") &&
+							!change.text.includes("Original ↔ Cline's Changes")
+						)
+					})
+
+					if (hasUserChanges) {
+						// Notify webview that code was modified by user
+						vscode.commands.executeCommand("cline.notifyCodeModified")
+					}
+				}
+			}),
+		)
+	}
 
 	async open(relPath: string): Promise<void> {
 		this.relPath = relPath
@@ -350,5 +372,7 @@ export class DiffViewProvider {
 		this.activeLineController = undefined
 		this.streamedLines = []
 		this.preDiagnostics = []
+		this.disposables.forEach((d) => d.dispose())
+		this.disposables = []
 	}
 }
